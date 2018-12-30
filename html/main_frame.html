@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+      <title>title</title>
+      <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+      <style>
+      header {
+          width: 100%;
+          height: 130px;
+          box-sizing: border-box;
+          padding: 4px 10px;
+      }
+
+      header .banner {
+          width: 100%;
+          height: 100%;
+      }
+
+      section {
+          position: relative;
+          width: 100%;
+          height: auto;
+          box-sizing: border-box;
+          padding: 0 8px;
+      }
+
+      .content {
+          width: 100%;
+          height: 100%;
+      }
+
+      .ware {
+          position: relative;
+          width: 100%;
+          height: 145px;
+          box-sizing: border-box;
+          padding-top: 15px;
+          padding-bottom: 15px;
+          border-bottom: 1px solid #d1d1d1;
+      }
+
+      .ware .thumbnail {
+          position: absolute;
+          top: 20px;
+          left: 0px;
+          height: 100px;
+          width: 100px;
+      }
+
+      .ware .info {
+          width: 100%;
+          height: 114px;
+          box-sizing: border-box;
+          padding-left: 112px;
+          padding-right: 28px;
+      }
+
+      .ware .info .name {
+          width: 100%;
+          height: 15px;
+          color: #555555;
+          margin-top: 14px;
+          font-size: 15px;
+      }
+
+      .ware .info .description {
+          margin-top: 10px;
+          width: 100%;
+          height: 13px;
+          font-size: 13px;
+          color: #9d9d9d;
+      }
+
+      .ware .info .price-tag {
+          margin-top: 10px;
+          width: 100%;
+          height: 12px;
+          font-size: 12px;
+          vertical-align: top;
+      }
+
+      .ware .info .price-tag .price {
+          color: #ffaf49;
+      }
+
+      .ware .info .price-tag .unit {
+          font-size: 8px;
+          color: #ffaf49;
+      }
+
+      .ware .info .origin-price {
+          margin-top: 5px;
+          width: 100%;
+          height: 10px;
+          font-size: 10px;
+          color: #d3d3d3;
+      }
+
+      .ware .control {
+          position: absolute;
+          width: 110px;
+          height: 23px;
+          right: 8px;
+          top:90px;
+      }
+
+      .ware .control .add {
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 23px;
+          height: 23px;
+          z-index: 2;
+      }
+
+      .push-status {
+          width: 100%;
+          height: 40px;
+          font-size: 16px;
+          color: #888;
+          line-height: 40px;
+          text-align: center;
+          background-color: #fff;
+          padding-top: 420px;
+
+      }
+
+      .active {
+          opacity: 0.7;
+      }
+      </style>
+  </head>
+  <body>
+    <header id="header">
+        <img id="banner" class="banner" src="../image/adver2.jpg">
+    </header>
+    <section id="list">
+      <div class="ware" tapmode onclick="fnOpenWare('{{=ware.id}}')">
+        <div class="content">
+          <img class="thumbnail" src="../image/book1.png">
+          <div class="info">
+            <div class="name">安迪生童话</div>
+            <div class="description">描述：这是一本很浪漫的童话故事</div>
+              <div class="price-tag">
+                <span class="prive">Y100</span>
+                <span class="unit">/本</span>
+              </div>
+              <div class="origin-price">图书价:
+                <del>Y110</del>
+              </div>
+          </div>
+          <div class="control">
+            <img class="add" src="../image/add.png">
+          </div>
+        </div>
+      </div>
+    </section>
+    <script type="text/template" id="wareTemplate">
+    {{~it:ware:index}}
+    <div class="ware" tapmode onclick="fnOpenWare('{{=ware.id}}')">
+      <div class="content">
+            <img onload="fnLoadImage(this)" data-url="{{=ware.thumbnail.url}}" class="thumbnail" src="../image/default_rect.png">
+          <div class="info">
+          <div class="name">{{=ware.name}}</div>
+          <div class="description">{{=ware.description}}</div>
+          <div class="price-tag">
+              <span class="price">￥{{=ware.price}}</span>
+              <span class="unit">/{{=ware.unit}}</span>
+          <div>
+              <div class="origin-price">书店：
+                <del>￥{{=ware.originPrice}}</del>
+              </div>
+            </div>
+            <div class="control">
+                <img class="add" src="../image/add.png">
+            </div>
+          </div>
+        </div>
+        {{~}}
+    </script>
+    <div class="push-status" id="pushStatus">上拉加载更多</div>
+
+  </body>
+
+
+  <script type="text/javascript" src="../script/api.js"></script>
+  <script type="text/javascript" src="../script/APICloud-rest.js"></script>
+  <script type="text/javascript" src="../script/SHA1.js"></script>
+  <script type="text/javascript" src="../script/doT.min.js"></script>
+  <script type="text/javascript">
+      apiready = function(){
+      fnLoadWares();
+
+      api.setRefreshHeaderInfo({
+          loadingImg: 'widget://image/refresh.png',
+          bgColor: '#fff',
+          textColor: '#e1017e',
+          showTime: true
+      }, function(ret, err) {
+          // 刷新商品列表
+          fnLoadWares();
+      });
+
+        api.addEventListener({
+              name:'scrolltobottom',
+              extra:{
+                threshold:300//距离底部患有多少触发scrolltobottom事件
+              },function(ret,err){
+                //获取更多的商品
+                fnLoadWares(true);
+              }
+        });
+
+     }
+
+     // 实现商品列表的图片缓存
+     function fnLoadImage(ele_) {
+         var dataUrl = $api.attr(ele_, 'data-url');
+         // 缓存data-url所指定的图片
+         if (dataUrl) {
+             api.imageCache({
+                 url: dataUrl
+             }, function(ret, err) {
+                 if (ret) {
+                     ele_.src = ret.url;
+                 }
+             });
+         }
+     }
+
+   function fnOpenWare(wareId_){
+     api.openWin({
+         name: 'ware',
+         url: './ware.html',
+         pageParam: {
+             wareId: wareId_
+         }
+     });
+   }
+
+
+       var skip = 0;
+       var limit = 5;
+       function fnLoadWares(more){
+         if(more){
+           skip+=limit;
+         }else{
+           skip=0;
+         }
+       var now = Date.now();
+       var appKey = SHA1("A6099255481782"+"UZ"+"6FAE7BB1-8CFA-5087-1914-CCFB04C5EB85"+"UZ"+now)+"."+now
+       var params = {
+           fields: {},
+           where: {
+               supportAreaId: "56c80e0c789b068408ab5a6f",
+               wareTypeId: api.pageParam.wareTypeId
+           },
+           skip: 0,
+           limit: 5
+       };
+       api.ajax({
+           url: 'http://d.apicloud.com/mcm/api/ware?filter=' + $api.jsonToStr(params),
+           method: 'get',
+           headers: {
+               "X-APICloud-AppId": "A6099255481782",
+               "X-APICloud-AppKey":appKey
+           }
+       }, function(ret, err) {
+           if(ret){
+             var strTemplate = $api.html
+             (
+               $api.byId('wareTemplate')
+             );
+             var fnTemplate = doT.template(strTemplate);
+             strTemplate = fnTemplate(ret);
+             var list = $api.byId('list');
+             if(more){
+               $api.append(list, strTemplate);
+             }else{
+                $api.html(list, strTemplate);
+             }
+            api.refreshHeaderLoadDone();
+           }
+           else{
+             //alert(JSON.stringify(err));
+           }
+        }
+      );
+     }
+
+  </script>
+
+  </html>

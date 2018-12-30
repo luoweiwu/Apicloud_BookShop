@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+      <title>title</title>
+      <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+      <style>
+      header {
+          position: relative;
+          width: 100%;
+          height: 50px;
+          background-color: #ffaf45;
+      }
+
+      header .left {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100px;
+          height: 50px;
+      }
+
+      header .left .arrow {
+          position: absolute;
+          bottom: 21px;
+          left: 11px;
+          width: 13px;
+          height: 8px;
+          background: url(../image/arrow_down.png);
+          background-size: 13px 8px;
+          background-position: center center;
+          background-repeat: no-repeat;
+          -webkit-transition: 200ms;
+          transition: 200ms;
+      }
+
+      header .left .arrow.active {
+          -webkit-transform: rotate(180deg);
+          transform: rotate(180deg);
+      }
+
+      header .left .city {
+          position: relative;
+          z-index: 2;
+          width: 100%;
+          height: 50px;
+          padding-left: 27px;
+          box-sizing: border-box;
+          line-height: 50px;
+          font-size: 14px;
+          color: #fff;
+          text-align: left;
+      }
+
+      header .center {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          background: url(../image/book.png);
+          background-size: 74px 19px;
+          background-position: center center;
+          background-repeat: no-repeat;
+      }
+
+      header .right {
+          position: absolute;
+          bottom: 0;
+          right: 0;
+          width: 40px;
+          height: 50px;
+          background: url(../image/home_membercenter.png);
+          background-size: 30px 30px;
+          background-position: center center;
+          background-repeat: no-repeat;
+      }
+
+      nav {
+          display: -webkit-box;
+          display: -webkit-flex;
+          display: flex;
+          -webkit-box-orient: horizontal;
+          -webkit-flex-flow: row;
+          flex-flow: row;
+          position: relative;
+          width: 100%;
+          height: 40px;
+          background-color: #ffaf45;
+      }
+
+      nav .menu {
+          -webkit-box-flex: 1;
+          -webkit-flex: 1;
+          flex: 1;
+          width: 100%;
+          height: 40px;
+          line-height: 40px;
+          font-size: 13px;
+          color: #ff7f00;
+          text-align: center;
+      }
+
+      nav .menu.selected {
+          font-size: 14px;
+          color: #fff;
+          font-weight: bolder;
+      }
+      </style>
+  </head>
+  <body>
+    <!--header部分-->
+    <header id="header">
+          <div class="left" tapmode onclick="fnOpenCitySelectorFrame()">
+            <div class="arrow" id="arrow"></div>
+            <div class="city" id="city">厦门市</div>
+        </div>
+        <div class="center"></div>
+        <!--右上角注册点击事件-->
+        <div class="right" tapmode onclick="fnOpenPersonalCenterWin();"></div>
+    </header>
+    <nav id="nav">
+        <div class="menu selected" tapmode="selected" onclick="fnSetNavMenuIndex(0);">武侠</div>
+        <div class="menu" tapmode="selected" onclick="fnSetNavMenuIndex(1);">科幻</div>
+        <div class="menu" tapmode="selected" onclick="fnSetNavMenuIndex(2);">悬疑</div>
+        <div class="menu" tapmode="selected" onclick="fnSetNavMenuIndex(3);">爱情</div>
+        <div class="menu" tapmode="selected" onclick="fnSetNavMenuIndex(4);">恐怖</div>
+    </nav>
+  </body>
+  <script type="text/javascript" src="../script/api.js"></script>
+  <script type="text/javascript">
+      apiready = function(){
+          $api.fixStatusBar(
+            $api.byId('header')
+          );
+
+          var header = $api.byId('header');
+          var nav = $api.byId('nav');
+
+          var headerH = $api.offset(header).h;
+          var navH = $api.offset(nav).h;
+
+          var frames = [];
+          for (var i = 0; i < 5; i++) {
+              frames.push({
+                  name: 'main_frame_' + i,
+                  url: './main_frame.html',
+                  pageParam: {
+                      wareTypeIndex: i
+                  }
+              });
+          }
+
+          frames[0].pageParam.wareTypeId = "56c80da883af652643474b6b";
+          frames[1].pageParam.wareTypeId = "56c80db78d04c83d3d1dedea";
+          frames[2].pageParam.wareTypeId = "56c80dc031da9e480de1cb49";
+          frames[3].pageParam.wareTypeId = "56c80dc383af652643474b6d";
+          frames[4].pageParam.wareTypeId = "56c80dc88d04c83d3d1dedf3";
+
+          // 打开FrameGroup
+          api.openFrameGroup ({
+              name: 'mainFrameGroup',
+              scrollEnabled: true,      //支持手势滑动
+              rect: {
+                   x: 0,
+                   y: headerH+navH,
+                   w: 'auto',          //自动填充所在Window宽度
+                   h: 'auto'           //自动填充所在window高度
+              },
+              index: 0,
+              frames: frames,
+              preload:frames.length
+          }, function(ret, err){        //回调函数
+              var menus = $api.domAll($api.byId("nav"),".menu");
+              for(var i=0;i<menus.length;i++){
+                  $api.removeCls(menus[i], 'selected');
+              }
+              $api.addCls(menus[ret.index],'selected');
+          });
+
+          api.openFrame({
+              name: 'minicart_frame',
+              url: './minicart_frame.html',
+              rect: {
+                  x: 0,
+                  y: api.winHeight - 55,
+                  w: 150,
+                  h: 34
+              },
+              bounces: false // 关闭弹动
+          });
+          // 将mini购物车Frame放置在首页Window所有Frame的最上层
+          api.bringFrameToFront({
+              from: 'minicart_frame'
+          });
+
+          api.addEventListener({
+              name: 'citySelected'
+          }, function(ret, err){
+              $api.removeCls($api.byId("arrow"),'active');
+              $api.html($api.byId("city"),ret.value.cityName);
+              api.closeFrame({
+                  name:'cityselectorFrame'
+              });
+              });
+
+
+      }
+
+      // 分类菜单点击的响应函数，切换Frame
+      function fnSetNavMenuIndex(index_) {
+          // 首先更新菜单选中状态
+          var menus = $api.domAll($api.byId("nav"),".menu");
+          $api.addCls(menus[index_], 'selected');
+          // 切换FrameGroup中的当前Frame
+          api.setFrameGroupIndex({
+              name: 'mainFrameGroup',
+              index: index_,
+              scroll: true
+          });
+      }
+
+      function fnOpenPersonalCenterWin() {
+        api.openWin({
+            name: 'login',
+            url: './login.html'
+        });
+      }
+
+      // 打开城市选择Frame
+      function fnOpenCitySelectorFrame() {
+          var header = $api.byId('header');
+          var headerH = $api.offset(header).h;
+          // 根据UI架构设计（ui-architecture.xmind），打开城市选择Frame
+          api.openFrame({
+              name: 'cityselectorFrame',
+              url: './cityselector_frame.html',
+              rect: {
+                  x:  0,
+                  y:  headerH,
+                  w: 'auto', // 自动填充所在Window的宽度
+                  h: 'auto' // 自动填充所在Window的高度
+              },
+            bgColor:'rgba(0,0,0,0.8)'
+          });
+          $api.addCls($api.byId("arrow"), 'active');
+      }
+
+
+      function fnOpenPersonalCenterWin() {
+          // 从缓存中获取用户信息
+          var userInfo = $api.getStorage('userInfo');
+
+          // 判断当前用户是否登录了
+          if (userInfo ) {
+              // 登录成功，打开个人中心Window
+              api.openWin({
+                  name: 'personalcenter',
+                  url: './personalcenter.html',
+                  pageParam:{
+                    userId:userInfo.userId
+                  }
+              });
+          } else {
+              // 没有登录，打开登录Window
+              api.openWin({
+                  name: 'login',
+                  url: './login.html'
+              });
+          }
+      }
+
+
+
+  </script>
+  </html>
